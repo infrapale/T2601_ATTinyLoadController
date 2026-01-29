@@ -1,6 +1,6 @@
 /*******************************************************************************
 
-T2411 ATtiny412 Sleep Control
+T2601 ATtiny412 Load Control
 - I2C slave interface
 - Cut main MCU and peripheral power on timeout or direct command
 - EEPROM functions
@@ -71,7 +71,7 @@ void wire_begin(void)
 {
   Wire.begin(I2C_ADDR); // Initialize I2C (Slave Mode)
   Wire.onRequest(i2c_request_event);
-  Wire.onReceive( i2c_receive_event );
+  Wire.onReceive(i2c_receive_event);
 }
 
 
