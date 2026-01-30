@@ -1,7 +1,38 @@
 #ifndef __REG_H__
 #define __REG_H__
-/*
 #include "main.h"
+
+
+#define  REG_LEN                64
+#define  REG_EEPROM_BUFF_LEN    16
+#define  REG_NBR_LOAD_SW        2
+
+typedef struct
+{
+    uint32_t  *wd_interval;
+    uint32_t  *sleep_time;
+    uint8_t   *load_sw;  
+    uint8_t   *eeprom_state;
+    uint8_t   *eeprom_addr;
+    uint8_t   *reserved;
+    uint8_t   *eeprom_buff;
+} reg_data_st;
+
+typedef enum
+{
+    REG_WD_INTERVAL     = 0,
+    REG_SLEEP_TIME      = REG_WD_INTERVAL + 4,
+    REG_LOAD_SW         = REG_SLEEP_TIME + 4,
+    REG_EEPROM_STATE    = REG_LOAD_SW + REG_NBR_LOAD_SW,
+    REG_EEPROM_ADDR     = REG_EEPROM_STATE + 1,
+    REG_RESERVED_1      = REG_EEPROM_ADDR + 1,
+    REG_EEPROM_BUFF     = REG_RESERVED_1 + 4
+} reg_data_et;
+
+void reg_initialize(void);
+uint8_t reg_get_item_len(uint8_t reg_addr); 
+
+/*
 
 typedef enum
 {

@@ -2,6 +2,7 @@
 #include "main.h"
 #include "io.h"
 #include "eep.h"
+#include "reg.h"
 
 #define  WD_DEFAULT_INTERVAL    10000
 #define  WD_POWER_OFF_DURATION  2000
@@ -17,6 +18,7 @@ typedef struct
 
 extern main_data_st main_data;
 extern restarts_st restarts;
+extern reg_data_st reg; 
 
 ed_st ed;
 
@@ -41,40 +43,63 @@ void edog_initialize(void)
 
 void edog_state_machine(void)
 {
-    
-    uint8_t clr_input = io_inp_clr_wd();
-
-    if (ed.last_clr_value != clr_input )
-    {
-        ed.timeout_at_ms = millis() + main_data.wd_interval_ms;
-        ed.last_clr_value = clr_input;
-    }
-
     switch(ed.state)
     {
       case 0:
           ed.state = 10;
           break;
       case 10:
-          if (main_data.wd_is_active > 0) ed.state = 100;
-          break;  
-      case 100:  // WD is active
-        if (millis() > ed.timeout_at_ms)
-        {
-            io_out_power_off();
-            ed.power_on_at_ms = millis() + 2000;
-            restarts.watchdog++;
-            eep_req_save(EEPROM_RESTARTS);
-            ed.state = 110;
-        }
-        break;
-      case 110: 
-        if(millis() > ed.power_on_at_ms)
-        {
-            io_out_power_on();
-            ed.timeout_at_ms = millis() + main_data.wd_interval_ms;
-            ed.state = 10;
-        }
-        break;
+          //if(reg.eeprom_rdy)
+          ed.state = 10;
+          break;
+      case 20:
+          ed.state = 10;
+          break;
+      case 30:
+          ed.state = 10;
+          break;
+      case 40:
+          ed.state = 10;
+          break;
     }
-}   
+}
+
+// void edog_state_machine(void)
+// {
+    
+//     uint8_t clr_input = io_inp_clr_wd();
+
+//     if (ed.last_clr_value != clr_input )
+//     {
+//         ed.timeout_at_ms = millis() + main_data.wd_interval_ms;
+//         ed.last_clr_value = clr_input;
+//     }
+
+//     switch(ed.state)
+//     {
+//       case 0:
+//           ed.state = 10;
+//           break;
+//       case 10:
+//           if (main_data.wd_is_active > 0) ed.state = 100;
+//           break;  
+//       case 100:  // WD is active
+//         if (millis() > ed.timeout_at_ms)
+//         {
+//             io_out_power_off();
+//             ed.power_on_at_ms = millis() + 2000;
+//             restarts.watchdog++;
+//             eep_req_save(EEPROM_RESTARTS);
+//             ed.state = 110;
+//         }
+//         break;
+//       case 110: 
+//         if(millis() > ed.power_on_at_ms)
+//         {
+//             io_out_power_on();
+//             ed.timeout_at_ms = millis() + main_data.wd_interval_ms;
+//             ed.state = 10;
+//         }
+//         break;
+//     }
+// }   

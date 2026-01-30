@@ -3,6 +3,40 @@
 #include "reg.h"
 //#include "ee_prom.h"
 //#include "helper.h"
+
+uint8_t reg_bulk[REG_LEN];
+
+reg_data_st reg = {0};
+
+void reg_initialize(void)
+{
+    reg.wd_interval     = (uint32_t *) &reg_bulk[REG_WD_INTERVAL];
+    reg.sleep_time      = (uint32_t *) &reg_bulk[REG_SLEEP_TIME];
+    reg.load_sw         = (uint8_t *) &reg_bulk[REG_LOAD_SW];
+    reg.eeprom_state    = (uint8_t *) &reg_bulk[REG_EEPROM_STATE];
+    reg.eeprom_addr     = (uint8_t *) &reg_bulk[REG_EEPROM_ADDR];
+    reg.reserved        = (uint8_t *) &reg_bulk[REG_RESERVED_1];
+    reg.eeprom_buff     = (uint8_t *) &reg_bulk[REG_EEPROM_BUFF];
+
+    *reg.wd_interval = 70000;
+    reg.eeprom_buff[2] = 42;
+}
+
+uint8_t reg_get_item_len(uint8_t reg_addr)
+{   uint8_t len = 0;
+    switch(reg_addr)
+    {
+        case REG_WD_INTERVAL: len = 4; break;
+        case REG_SLEEP_TIME: len = 4; break;
+        case REG_LOAD_SW: len = 2; break;
+        case REG_EEPROM_STATE: len = 1; break;
+        case REG_EEPROM_ADDR: len = 1; break;
+        case REG_RESERVED_1: len = 0; break;
+        case REG_EEPROM_BUFF: len = 16; break;
+    }
+    return len;
+}
+
 /*
 
 typedef enum

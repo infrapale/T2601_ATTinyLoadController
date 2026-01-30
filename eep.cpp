@@ -2,9 +2,12 @@
 #include "main.h"
 #include <EEPROM.h>
 #include "eep.h"
+#include "reg.h"
 
 #define EEP_SAVE_INTERVAL_ms   1000
 #define EEP_CNTR_START            4
+
+extern reg_data_st reg;
 
 typedef struct
 {
@@ -58,22 +61,40 @@ uint8_t eep_load_u8(eeprom_index_et indx, int offs  )
   return EEPROM.read(eep[indx].addr + offs);
 }
 
-void eep_save_array(eeprom_index_et indx, uint8_t bytes, uint8_t *u8_arr )
+void eep_save_array(uint8_t addr, uint8_t bytes, uint8_t *u8_arr )
 {
-  int addr = eep[indx].addr;
   for (uint8_t i = 0; i < bytes; i++)
   {
     EEPROM.write(addr++, u8_arr[i]);
   }
 }
 
-void eep_load_array(eeprom_index_et indx, uint8_t bytes, uint8_t *u8_arr )
+void eep_load_array(uint8_t addr, uint8_t bytes, uint8_t *u8_arr )
 {
-  int addr = eep[indx].addr;
   for (int i = 0; i < bytes; i++)
   {
     u8_arr[i] = EEPROM.read(addr++);
   }
+}
+
+
+void eep_state_machine(void)
+{
+    switch(*reg.eeprom_state)
+    {
+        case EEPROM_IDLE:
+            break; 
+        case EEPROM_WR_BUFF:
+            eep_save_array(*reg.eeprom_addr, 16, reg.eeprom_buff);
+            *reg.eeprom_state = EEPROM_IDLE;
+            break; 
+        case EEPROM_RD_BUFF:
+            eep_load_array(*reg.eeprom_addr, 16, reg.eeprom_buff);
+            *reg.eeprom_state = EEPROM_READY;
+            break; 
+        case EEPROM_READY:
+            break; 
+    }
 }
 
 

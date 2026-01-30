@@ -55,15 +55,18 @@ High Voltage setting;
 #include "edog.h"
 // #include <EEPROM.h>
 #include "sleep.h"
+#include "reg.h"
 
 uint8_t RxByte;
 uint8_t tbuff[] = { 0x56, 0x45, 0x34, 0x23, 0x12, 0x01 };
 
 main_data_st main_data;
-volatile i2c_buff_st i2c_buff;
+//volatile i2c_buff_st i2c_buff;
 restarts_st restarts;
 
 //extern cmd_data_st cmd_data[];
+extern uint8_t reg_bulk[REG_LEN];
+
 
 uint32_t next_task_run_ms = 0;
 
@@ -82,6 +85,8 @@ void setup()
   io_gpio_enable();
   wire_begin();
   epp_initialize_data();
+  reg_initialize();
+
 
   main_data.wd_interval_ms = 5000;
   main_data.wd_is_active = 0;
@@ -89,7 +94,7 @@ void setup()
   main_data.goto_sleep = false;
   main_data.do_wakeup_routines = false;
   main_data.sleep_time_ms = 4000;
-  edog_initialize();
+  //edog_initialize();
   next_task_run_ms = millis() + TICK_TIME;
   io_out_power_on();
 }
@@ -97,33 +102,34 @@ void setup()
 
 void loop() 
 {
-    if (main_data.goto_sleep )  
-    {
-      main_data.goto_sleep = false;
-      io_out_power_off();
-      Wire.end();
-      sleepNCycles(main_data.sleep_time_cycles);
-      main_data.do_wakeup_routines = true;
-    }
-    if(main_data.do_wakeup_routines)
-    {
-      main_data.do_wakeup_routines = false;
-      io_out_power_on();
-      wire_begin();
-    }
+    // if (main_data.goto_sleep )  
+    // {
+    //   main_data.goto_sleep = false;
+    //   io_out_power_off();
+    //   Wire.end();
+    //   sleepNCycles(main_data.sleep_time_cycles);
+    //   main_data.do_wakeup_routines = true;
+    // }
+    // if(main_data.do_wakeup_routines)
+    // {
+    //   main_data.do_wakeup_routines = false;
+    //   io_out_power_on();
+    //   wire_begin();
+    // }
 
-    if (i2c_buff.cmd_len > 0) 
-    {
-      // io_blink_color_times(PIN_PWR_OFF , i2c_buff.cmd_len, 4);
-      cmd_execute_cmd(i2c_buff.cmd[0]);
-      i2c_buff.cmd_len = 0;
-    }
+    // if (i2c_buff.cmd_len > 0) 
+    // {
+    //   // io_blink_color_times(PIN_PWR_OFF , i2c_buff.cmd_len, 4);
+    //   //cmd_execute_cmd(i2c_buff.cmd[0]);
+    //   i2c_buff.cmd_len = 0;
+    // }
     
     if(millis() > next_task_run_ms)
     {
       next_task_run_ms = millis() + TICK_TIME;
       //main_data.goto_sleep = io_inp_goto_sleep();
       //eep_time_machine();
+      eep_state_machine();
       edog_state_machine();
     }
 
@@ -131,35 +137,38 @@ void loop()
 }
 
 
+volatile uint8_t current_reg = 0;
+volatile bool reg_addr_received = false;
 
-void i2c_receive_event(int rx_bytes)
+void i2c_receive_event(int how_many)
 {
-  uint8_t msg_len = 0;
-  i2c_buff.rx_indx = 0;
+    //uint8_t msg_len = 0;
+    //i2c_buff.rx_indx = 0;
+    if (how_many > 0)
+    {          
+        current_reg = Wire.read();   // First byte = register address
+        //i2c_buff.rx_indx = current_reg;
+        reg_addr_received = true;
+        how_many--;
 
-  for (int i = 0; i < rx_bytes; i++)
-  {
-    i2c_buff.rx[i2c_buff.rx_indx] = Wire.read();
-    i2c_buff.rx_indx++; 
-
-    if (i2c_buff.rx_indx >= I2C_RX_BUFF_SIZE) break;
-  }
-  msg_len = rx_bytes;
-  for (uint8_t i=0; i < msg_len; i++) 
-  {
-    i2c_buff.cmd[i] = i2c_buff.rx[i];
-  }
-  i2c_buff.cmd_len = msg_len;       
-  i2c_buff.rx_indx = 0;
+        // Remaining bytes = data to write
+        while (how_many-- > 0 && current_reg < REG_LEN) {
+            reg_bulk[current_reg++] = Wire.read();
+        }
+    } 
 }
 
 
 void i2c_request_event()
 {
-   uint8_t cmd = i2c_buff.cmd[0];
-   cmd_get_data(cmd);
-   
-   
+    uint8_t len = reg_get_item_len(current_reg); 
+    uint8_t cntr = 0;
+
+    while (cntr < len) { 
+        Wire.write(reg_bulk[current_reg + cntr]); 
+        cntr++;
+    }
+
 }
 /*
 void setup() {
