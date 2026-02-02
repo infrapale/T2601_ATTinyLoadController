@@ -4,18 +4,20 @@
 #include "main.h"
 #include "io.h"
 
-/*
 
-  void io_initialize(void)
-  {
-    pinMode(PIN_EDOG_CLR, INPUT);
-    pinMode(PIN_EDOG_WAKE, INPUT_PULLUP);
-    pinMode(PIN_PWR_OFF_0, OUTPUT);
-    digitalWrite(PIN_PWR_OFF_0, LOW);
-  }
-*/
 
-void io_blink_color_times(uint8_t pin, uint8_t n, uint16_t us)
+void io_initialize(void)
+{
+  io_gpio_enable();
+  // pinMode(PIN_EDOG_CLR, INPUT);
+  // pinMode(PIN_EDOG_WAKE, INPUT_PULLUP);
+  // pinMode(PIN_PWR_OFF_0, OUTPUT);
+  // digitalWrite(PIN_PWR_OFF_0, LOW);
+  io_blink_test_times(4, 20);
+}
+
+
+void io_blink_test_times(uint8_t n, uint16_t us)
 {
   for (uint8_t i=0; i < n; i++)
   {
@@ -47,13 +49,14 @@ bool io_inp_clr_wd(void)
 
 void io_gpio_enable(void)
 {
-  PORTA.DIRSET = PIN_OUT_PWR_OFF_BM;
-  PORTA.OUTSET = PIN_OUT_PWR_OFF_BM;
+  //PORTA.DIRSET = PIN_OUT_PWR_OFF_BM;
+  //PORTA.OUTSET = PIN_OUT_PWR_OFF_BM;
 
   PORTA.DIRSET = PIN_OUT_TEST_BM;
   PORTA.OUTSET = PIN_OUT_TEST_BM;
+  io_led_on();
 
-  PORTA.DIRCLR = PIN_INP_CLR_WD_BM;
+  //PORTA.DIRCLR = PIN_INP_CLR_WD_BM;
   PORTA.PIN6CTRL =  (PORT_PULLUPEN_bm | PORT_ISC_INTDISABLE_gc) & ~PORT_ISC_INPUT_DISABLE_gc;  
 }
 

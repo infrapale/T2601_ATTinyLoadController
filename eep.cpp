@@ -3,6 +3,7 @@
 #include <EEPROM.h>
 #include "eep.h"
 #include "reg.h"
+#include "io.h"
 
 #define EEP_SAVE_INTERVAL_ms   1000
 #define EEP_CNTR_START            4
@@ -71,7 +72,7 @@ void eep_save_array(uint8_t addr, uint8_t bytes, uint8_t *u8_arr )
 
 void eep_load_array(uint8_t addr, uint8_t bytes, uint8_t *u8_arr )
 {
-  for (int i = 0; i < bytes; i++)
+  for (uint8_t i = 0; i < bytes; i++)
   {
     u8_arr[i] = EEPROM.read(addr++);
   }
@@ -85,11 +86,15 @@ void eep_state_machine(void)
         case EEPROM_IDLE:
             break; 
         case EEPROM_WR_BUFF:
+            io_blink_test_times(2, 20);
             eep_save_array(*reg.eeprom_addr, 16, reg.eeprom_buff);
-            *reg.eeprom_state = EEPROM_IDLE;
+            io_blink_test_times(1, 10);
+            *reg.eeprom_state = EEPROM_READY;
             break; 
         case EEPROM_RD_BUFF:
+            io_blink_test_times(3, 20);
             eep_load_array(*reg.eeprom_addr, 16, reg.eeprom_buff);
+            io_blink_test_times(1, 20);
             *reg.eeprom_state = EEPROM_READY;
             break; 
         case EEPROM_READY:

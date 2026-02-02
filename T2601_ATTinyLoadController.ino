@@ -83,6 +83,7 @@ void setup()
 {
   sleep_setup();
   io_gpio_enable();
+  io_blink_test_times(4, 20);
   wire_begin();
   epp_initialize_data();
   reg_initialize();
