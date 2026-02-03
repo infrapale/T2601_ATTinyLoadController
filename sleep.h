@@ -1,6 +1,12 @@
 #ifndef __SLEEP_H__
 #define __SLEEP_H__
 
+typedef enum 
+{
+    SLEEP_INACTIVE = 0,
+    SLEEP_ACTIVATED,
+    SLEEP_ZZZZZ,
+} sleep_state_et;
 
 
 void sleep_setup(void);
@@ -13,18 +19,9 @@ void sleepNCycles(uint8_t val);
 
 void disableAllPeripherals(void);
 
-void ledOn(void);
-void ledOff(void);
-void pwr_off(void);
-void pwr_on(void);
+void sleep_state_machine(void);
 
-void ledToggle(void);
-void diagnosticPinHigh(void);
-void diagnosticPinLow(void);
-void diagnosticPinToggle(void);
+//void initSerialGPIO(void);
 
-void initSerialGPIO(void);
 
-void flashByte(uint8_t val);
-  
 #endif

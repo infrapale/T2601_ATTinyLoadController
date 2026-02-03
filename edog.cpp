@@ -18,13 +18,12 @@ typedef struct
 
 extern main_data_st main_data;
 extern restarts_st restarts;
-extern reg_data_st reg; 
 
 ed_st ed;
 
 void edog_clear()
 {
-  ed.timeout_at_ms = millis() + main_data.wd_interval_ms;
+  ed.timeout_at_ms = millis() + reg_read_u32(REG_WD_INTERVAL) ;
 }
 
 void edog_force_reset(uint16_t reset_duration)
@@ -86,7 +85,7 @@ void edog_state_machine(void)
 //       case 100:  // WD is active
 //         if (millis() > ed.timeout_at_ms)
 //         {
-//             io_out_power_off();
+//             io_power_off();
 //             ed.power_on_at_ms = millis() + 2000;
 //             restarts.watchdog++;
 //             eep_req_save(EEPROM_RESTARTS);
@@ -96,7 +95,7 @@ void edog_state_machine(void)
 //       case 110: 
 //         if(millis() > ed.power_on_at_ms)
 //         {
-//             io_out_power_on();
+//             io_power_on();
 //             ed.timeout_at_ms = millis() + main_data.wd_interval_ms;
 //             ed.state = 10;
 //         }

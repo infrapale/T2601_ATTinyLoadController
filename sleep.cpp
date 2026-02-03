@@ -32,10 +32,12 @@ https://github.com/microPaul/ATtiny412-Sleeping-Lighthouse/blob/main/main.c
 
 #include "Arduino.h"
 #include <avr/sleep.h>
+#include "main.h"
 #include "sleep.h"
 #include "io.h"
+#include "reg.h"
 
-
+extern main_data_st main_data;
 volatile uint8_t rtcIntSemaphore;  // flag from RTS interrupt that may be used by polled function
 
 
@@ -152,39 +154,34 @@ void sleepNCycles(uint8_t val) {
   //initSerialGPIO(); // initialize serial and GPIO 
 }
 
+void sleep_state_machine(void)
+{
+    // switch(reg_read_u8(REG_SLEEP_STATE))
+    // {
+    //     case SLEEP_INACTIVE:
+    //       break;
+    //     case SLEEP_ACTIVATED:
+    //       main_data.sleep_time_cycles = reg_read_u32(REG_SLEEP_TIME) / 500;
+    //       if(main_data.sleep_time_cycles > 255) main_data.sleep_time_cycles = 255;
+    //       Wire.end();
+    //       sleepNCycles((uint8_t) main_data.sleep_time_cycles);
+    //       reg_write_u8(REG_SLEEP_STATE,SLEEP_ZZZZZ);
+    //       break;
+    //     case SLEEP_ZZZZZ:
+    //       reg_write_u8(REG_SLEEP_STATE,SLEEP_INACTIVE);
+    //       break;
+    // }
+    // uint8_t load_sw_bm = reg_read_u8(REG_LOAD_SW);
+    // io_n_pulses(load_sw_bm, 2);
+    // if((load_sw_bm & 0x01) == 0x00) io_power1_on();
+    // else io_power1_off();
+    // if((load_sw_bm & 0x020) == 0x00) io_power2_on();
+    // else io_power2_off();
 
-
-//////////////////////////////////////////////////////////////////
-//  initSerialGPIO()
-//
-//  initialize Serial port and all needed GPIO
-//
-void xxinitSerialGPIO(void) {
-  //Serial.begin(9600, SERIAL_8N1); 
-  PORTA.DIRSET = PIN_OUT_PWR_OFF_BM; //  set port to output for LED
-  PORTA.OUTCLR = PIN_OUT_PWR_OFF_BM; // turn off LED
-  PORTA.DIRSET = PIN2_bm; //  set port A2 to output for scope diagnostic
-  PORTA.OUTCLR = PIN2_bm; // set A2 output low
 }
 
 
 
-//////////////////////////////////////////////////////////////////
-//  flashByte
-//
-//  This function provides a diagnosic report via a single LED.
-//  An LED is flashed short when a bit is zero and flashed long when
-//  a bit is one.  Eight bits are displayed sequentially starting with
-//  LSB and ending with MSB.
-//
-void flashByte(uint8_t val) {
-  uint8_t i;
-  for (i = 0; i < 8 ; i++) {
-    ledOn(); // turn on LED
-    (val & 1) ? delay(700) : delay (100);  // long delay for 1, short if zero
-    ledOff(); // turn off LED
-    delay(1000);
-    val >>= 1; // right shift val by one bit
-  }
-}
+
+
 

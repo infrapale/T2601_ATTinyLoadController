@@ -52,9 +52,9 @@ UPDI is used for programming the ATTiny412
 // #define PIN_EDOG_CLR        PA7
 ///  ... TODO
 
-#define PIN_INP_CLR_WD_BM       PA3_BM
-#define PIN_OUT_PWR_OFF_BM      PA7_BM
-#define PIN_OUT_TEST_BM         PA6_BM
+#define PIN_OUT_PWR1_OFF_BM     PA6_BM
+#define PIN_OUT_PWR2_OFF_BM     PA7_BM
+#define PIN_OUT_TEST_BM         PA3_BM
 
 
 
@@ -66,19 +66,21 @@ void io_gpio_enable(void);
 
 void io_gpio_disable(void);
 
-void io_blink_test_times(uint8_t n, uint16_t us);
+void io_n_pulses(uint8_t n, uint16_t us);
 
-void io_out_power_off(void);
+void io_power1_off(void);
+void io_power1_on(void);
 
-void io_out_power_on(void);
+void io_power2_off(void);
+void io_power2_on(void);
 
 bool io_inp_clr_wd(void);
 
-void io_led_on(void);
+void io_test_on(void);
 
-void io_led_off(void);
+void io_test_off(void);
 
-void io_led_toggle(void); 
+void io_test_toggle(void); 
 
 
 

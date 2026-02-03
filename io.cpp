@@ -9,41 +9,49 @@
 void io_initialize(void)
 {
   io_gpio_enable();
-  // pinMode(PIN_EDOG_CLR, INPUT);
-  // pinMode(PIN_EDOG_WAKE, INPUT_PULLUP);
-  // pinMode(PIN_PWR_OFF_0, OUTPUT);
-  // digitalWrite(PIN_PWR_OFF_0, LOW);
-  io_blink_test_times(4, 20);
+  io_n_pulses(4, 20);
 }
 
 
-void io_blink_test_times(uint8_t n, uint16_t us)
+void io_n_pulses(uint8_t n, uint16_t us)
 {
   for (uint8_t i=0; i < n; i++)
   {
-    io_led_on();
+    io_test_on();
     delayMicroseconds(us);
-    io_led_off();
+    io_test_off();
     delayMicroseconds(us);
   }
 }
 
 
-void io_out_power_off(void)
+void io_power1_off(void)
 {
-    PORTA.DIRCLR = PIN_OUT_PWR_OFF_BM;
+    PORTA.DIRCLR = PIN_OUT_PWR1_OFF_BM;
 }
 
-void io_out_power_on(void)
+void io_power1_on(void)
 {
-    PORTA.DIRSET = PIN_OUT_PWR_OFF_BM;
-    PORTA.OUTCLR = PIN_OUT_PWR_OFF_BM;
+    PORTA.DIRSET = PIN_OUT_PWR1_OFF_BM;
+    PORTA.OUTCLR = PIN_OUT_PWR1_OFF_BM;
 }
+
+void io_power2_off(void)
+{
+    PORTA.DIRCLR = PIN_OUT_PWR2_OFF_BM;
+}
+
+void io_power2_on(void)
+{
+    PORTA.DIRSET = PIN_OUT_PWR2_OFF_BM;
+    PORTA.OUTCLR = PIN_OUT_PWR2_OFF_BM;
+}
+
 
 bool io_inp_clr_wd(void)
 {
-    bool wd  = ((PORTA.IN & PIN_INP_CLR_WD_BM) != 0);
-    return wd;
+    //bool wd  = ((PORTA.IN & PIN_INP_CLR_WD_BM) != 0);
+    return true;
 }
 
 
@@ -54,11 +62,23 @@ void io_gpio_enable(void)
 
   PORTA.DIRSET = PIN_OUT_TEST_BM;
   PORTA.OUTSET = PIN_OUT_TEST_BM;
-  io_led_on();
+  PORTA.DIRSET = PIN_OUT_PWR1_OFF_BM;
+  PORTA.DIRSET = PIN_OUT_PWR2_OFF_BM;
+  PORTA.OUTCLR = PIN_OUT_PWR1_OFF_BM;
+  PORTA.OUTSET = PIN_OUT_PWR2_OFF_BM;
+
+
+  io_test_on();
 
   //PORTA.DIRCLR = PIN_INP_CLR_WD_BM;
   PORTA.PIN6CTRL =  (PORT_PULLUPEN_bm | PORT_ISC_INTDISABLE_gc) & ~PORT_ISC_INPUT_DISABLE_gc;  
 }
+
+// bool io_inp_goto_sleep(void)
+// {
+//     bool zzz  = (~PORTA.IN & PIN_INP_SLEEP_BM);
+//     return zzz;
+// }
 
 
 //////////////////////////////////////////////////////////////////
@@ -102,9 +122,9 @@ ISR(PORTA_PORT_vect)
 }
 
 //  LED control functions
-void io_led_on(void) {PORTA.OUTSET = PIN_OUT_TEST_BM;} 
-void io_led_off(void) {PORTA.OUTCLR = PIN_OUT_TEST_BM;}
-void io_led_toggle(void) {PORTA.OUTTGL = PIN_OUT_TEST_BM;} 
+void io_test_on(void) {PORTA.OUTSET = PIN_OUT_TEST_BM;} 
+void io_test_off(void) {PORTA.OUTCLR = PIN_OUT_TEST_BM;}
+void io_test_toggle(void) {PORTA.OUTTGL = PIN_OUT_TEST_BM;} 
 
 
 

@@ -48,9 +48,7 @@ High Voltage setting;
 #include "main.h"
 #include <Wire.h>
 #include <avr/sleep.h>
-#include "cmd.h"
 #include "io.h"
-#include "buff.h"
 #include "eep.h"
 #include "edog.h"
 // #include <EEPROM.h>
@@ -67,6 +65,7 @@ restarts_st restarts;
 //extern cmd_data_st cmd_data[];
 extern uint8_t reg_bulk[REG_LEN];
 
+void main_state_machine(void);
 
 uint32_t next_task_run_ms = 0;
 
@@ -83,55 +82,39 @@ void setup()
 {
   sleep_setup();
   io_gpio_enable();
-  io_blink_test_times(4, 20);
+  io_n_pulses(4, 20);
   wire_begin();
   epp_initialize_data();
   reg_initialize();
+  // while(true) {io_n_pulses(2, 2); delay(10);}
 
 
-  main_data.wd_interval_ms = 5000;
-  main_data.wd_is_active = 0;
+  //main_data.wd_interval_ms = 5000;
+  //main_data.wd_is_active = 0;
   main_data.sleep_time_cycles = 10;   // x 500ms
-  main_data.goto_sleep = false;
-  main_data.do_wakeup_routines = false;
-  main_data.sleep_time_ms = 4000;
-  //edog_initialize();
+  //main_data.goto_sleep = false;
+  //main_data.do_wakeup_routines = false;
+  //main_data.sleep_time_ms = 4000;
+  edog_initialize();
   next_task_run_ms = millis() + TICK_TIME;
-  io_out_power_on();
+  io_power1_on();
+  io_power2_on();
 }
+
+
 
 
 void loop() 
 {
-    // if (main_data.goto_sleep )  
-    // {
-    //   main_data.goto_sleep = false;
-    //   io_out_power_off();
-    //   Wire.end();
-    //   sleepNCycles(main_data.sleep_time_cycles);
-    //   main_data.do_wakeup_routines = true;
-    // }
-    // if(main_data.do_wakeup_routines)
-    // {
-    //   main_data.do_wakeup_routines = false;
-    //   io_out_power_on();
-    //   wire_begin();
-    // }
-
-    // if (i2c_buff.cmd_len > 0) 
-    // {
-    //   // io_blink_color_times(PIN_PWR_OFF , i2c_buff.cmd_len, 4);
-    //   //cmd_execute_cmd(i2c_buff.cmd[0]);
-    //   i2c_buff.cmd_len = 0;
-    // }
-    
     if(millis() > next_task_run_ms)
     {
-      next_task_run_ms = millis() + TICK_TIME;
-      //main_data.goto_sleep = io_inp_goto_sleep();
-      //eep_time_machine();
-      eep_state_machine();
-      edog_state_machine();
+        next_task_run_ms = millis() + TICK_TIME;
+        //main_data.goto_sleep = io_inp_goto_sleep();
+        eep_state_machine();
+        //sleep_state_machine();
+        main_state_machine();
+        io_n_pulses(4, 1);
+        edog_state_machine();
     }
 
 
@@ -171,6 +154,35 @@ void i2c_request_event()
     }
 
 }
+
+void main_state_machine(void)
+{
+    if(reg_read_u8(REG_SLEEP_STATE) == SLEEP_ACTIVATED )
+    {
+        reg_write_u8(REG_SLEEP_STATE,SLEEP_INACTIVE);
+        main_data.sleep_time_cycles = reg_read_u32(REG_SLEEP_TIME) / 500;
+        //main_data.sleep_time_cycles = 8;
+        if(main_data.sleep_time_cycles > 255) main_data.sleep_time_cycles = 4;
+        Wire.end();
+        sleepNCycles((uint8_t) main_data.sleep_time_cycles);
+        main_data.do_wakeup_routines = true;
+        if (main_data.do_wakeup_routines){
+          main_data.do_wakeup_routines = false;
+          io_power1_on();
+          io_power2_on();
+          wire_begin();
+        }
+        io_n_pulses(5, 2);
+    }
+    uint8_t load_sw_bm = reg_read_u8(REG_LOAD_SW);
+    //io_n_pulses(load_sw_bm, 2);
+    if((load_sw_bm & 0x01) == 0x00) io_power1_on();
+    else io_power1_off();
+    if((load_sw_bm & 0x020) == 0x00) io_power2_on();
+    else io_power2_off();
+
+}
+
 /*
 void setup() {
   epp_initialize_data();
