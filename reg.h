@@ -44,7 +44,7 @@ static inline uint16_t reg_read_u16(uint8_t offset)
            ((uint16_t)reg_bulk[offset + 1] << 8);
 }
 
-static inline void reg_write_u32(uint8_t offset, uint32_t value)
+static inline void voi(uint8_t offset, uint32_t value)
 {
     reg_bulk[offset + 0] = (value >> 0) & 0xFF;
     reg_bulk[offset + 1] = (value >> 8) & 0xFF;

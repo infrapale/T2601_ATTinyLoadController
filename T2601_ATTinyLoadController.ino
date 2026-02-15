@@ -178,7 +178,7 @@ void main_state_machine(void)
     //io_n_pulses(load_sw_bm, 2);
     if((load_sw_bm & 0x01) == 0x00) io_power1_on();
     else io_power1_off();
-    if((load_sw_bm & 0x020) == 0x00) io_power2_on();
+    if((load_sw_bm & 0x02) == 0x00) io_power2_on();
     else io_power2_off();
 
 }
