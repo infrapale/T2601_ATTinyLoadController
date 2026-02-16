@@ -113,8 +113,8 @@ void loop()
         eep_state_machine();
         //sleep_state_machine();
         main_state_machine();
-        io_n_pulses(4, 1);
-        edog_state_machine();
+        // io_n_pulses(4, 1);
+        // edog_state_machine();
     }
 
 
@@ -160,27 +160,28 @@ void main_state_machine(void)
     if(reg_read_u8(REG_SLEEP_STATE) == SLEEP_ACTIVATED )
     {
         reg_write_u8(REG_SLEEP_STATE,SLEEP_INACTIVE);
-        main_data.sleep_time_cycles = reg_read_u32(REG_SLEEP_TIME) / 500;
-        //main_data.sleep_time_cycles = 8;
+        //main_data.sleep_time_cycles = reg_read_u32(REG_SLEEP_TIME) / 500;
+        main_data.sleep_time_cycles = 8;
         if(main_data.sleep_time_cycles > 255) main_data.sleep_time_cycles = 4;
         Wire.end();
+        reg_write_u8(REG_LOAD_SW,0);
+        io_power1_off();
+        io_power2_off();
         sleepNCycles((uint8_t) main_data.sleep_time_cycles);
         main_data.do_wakeup_routines = true;
         if (main_data.do_wakeup_routines){
           main_data.do_wakeup_routines = false;
-          io_power1_on();
+          io_power1_off();
           io_power2_on();
           wire_begin();
         }
         io_n_pulses(5, 2);
     }
-    uint8_t load_sw_bm = reg_read_u8(REG_LOAD_SW);
-    //io_n_pulses(load_sw_bm, 2);
-    if((load_sw_bm & 0x01) == 0x00) io_power1_on();
-    else io_power1_off();
-    if((load_sw_bm & 0x02) == 0x00) io_power2_on();
-    else io_power2_off();
-
+    // uint8_t load_sw_bm = reg_read_u8(REG_LOAD_SW);
+    // if((load_sw_bm & 0x01) == 0x00) io_power1_on();
+    // else io_power1_off();
+    // if((load_sw_bm & 0x02) == 0x00) io_power2_on();
+    // else io_power2_off();
 }
 
 /*

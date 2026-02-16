@@ -106,7 +106,7 @@ void io_gpio_disable(void) {
   PORTA.PIN6CTRL = PORT_ISC_INPUT_DISABLE_gc;
   PORTA.PIN7CTRL = PORT_ISC_INPUT_DISABLE_gc;
   
-  //USART0.CTRLB &= ~USART_RXEN_bm & ~USART_TXEN_bm; // disable USART
+  USART0.CTRLB &= ~USART_RXEN_bm & ~USART_TXEN_bm; // disable USART
 }
 
 #define PA3_INTERRUPT PORTA.INTFLAGS & PIN3_bm
